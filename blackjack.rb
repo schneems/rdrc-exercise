@@ -1,12 +1,17 @@
 Deck = [2,3,4,5,6,7,8,9,10, :jack, :queen, :king, :ace]
 class Game
-  attr_accessor :player_hand, :dealer_hand
-  def initialize
-    @dealer_hand = Hand.new
-    @player_hand = Hand.new    
+
+
+  attr_accessor :dealer, :players
+  def initialize(num_of_players = 1)
+    @dealer = Player.new
+    @players = num_of_players.times.map { Player.new }
   end
   
-  
+  def play_round
+    @dealer.play
+    @players.each(&:play)
+  end
 end
 
 class Hand
@@ -34,10 +39,29 @@ end
 
 require 'pp'
 
-game = Game.new
-pp game.player_hand
-puts "hit? y/n"
-answer = gets.chomp
-game.player_hand.hit if answer.match(/y/i)
+class Player
+  attr_accessor :hand
 
-puts game.player_hand.score
+  def initialize(input = STDIN, output = STDOUT)
+    @hand = Hand.new 
+    @input = input
+    @output = output
+  end
+  
+  def play
+    @output.puts "Your Score: #{hand.score}. Hit? y/n" 
+    answer = @input.gets.chomp
+    if answer.match(/y/i)   
+      game.player_hand.hit
+      @output.puts "Score: #{hand.score}"
+      if hand.score > 21
+        @output.puts "Busted."
+      else
+        play
+      end
+    end
+  end
+end
+
+game = Game.new
+game.play_round
